@@ -24,7 +24,7 @@ We recommend running LLM Chemistry in a virtual environment to isolate its depen
 
 #### Option 2: Install Miniconda on macOS (manual)
 
-> **Note:** It is recommended to install Miniconda outside the `collm` project directory to avoid potential conflicts and ensure a clean project environment.
+> **Note:** It is recommended to install Miniconda outside the `llm-chemistry` project directory to avoid potential conflicts and ensure a clean project environment.
 
 ```shell
 # install miniconda (instructions from website)
@@ -41,7 +41,7 @@ source ~/miniconda3/bin/activate
 conda init --all
 ```
 
-After installing and initializing conda, create the CoLLM environment:
+After installing and initializing conda, create the `chemistry` environment:
 
 ```shell
 # create conda environment
