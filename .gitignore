@@ -27,3 +27,5 @@ share/python-wheels/
 
 .vscode/
 .pytest_cache/
+
+out/
