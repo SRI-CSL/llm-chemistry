@@ -173,7 +173,7 @@ Please change the performance history file (`TRIAL_DATA_FILE`) in the `cheme-map
 We have a [set of guidelines](CONTRIBUTING.md) for contributing to `llm-chemistry`.  These are guidelines, not rules. Use your best judgment, and feel free
 to propose  changes to this document in a pull request.
 
-## Citation
+## 📌 Citation
 
 If you find `llm-chemistry` useful in your research, please cite our work as follows:
 
