@@ -49,24 +49,9 @@ After installing and initializing conda, create the CoLLM environment:
 › conda activate chemistry
 ```
 
-## Running Examples
+### Warm up
 
-### Predefined Examples
-
-You can run LLM Chemistry on a few pre-defined examples, or on actual performance histories (`runs*.csv` files) using the provided scripts. For example, to run the examples:
-
-```sh
-# Homogeneously bad performing models
-› python examples.py --verbose --choice "worst"
-# or Homogeneously good performing models
-› python examples.py --verbose --choice "best"
-# or Random performing models
-› python examples.py --verbose --choice "random"
-```
-
-## Run LLM Chemistry for Multi-LLM Recommendation
-
-You can start by running `--help` for the multi-LLM recommendation:
+To ensure everything is set up correctly, run the following from your terminal:
 
 ```sh
 › python main.py --help
@@ -85,10 +70,27 @@ options:
   --verbose, -v         print detailed results and intermediate steps.
 ```
 
+## Running Code
+
+### Predefined Examples
+
+You can try LLM Chemistry on a few pre-defined examples (performance histories) using the `examples.py` script:
+
+```sh
+# Homogeneously bad performing models
+› python examples.py --verbose --choice "worst"
+# or Homogeneously good performing models
+› python examples.py --verbose --choice "best"
+# or Random performing models
+› python examples.py --verbose --choice "random"
+```
+
 ### Multi-LLM Recommendation
 
 Then, you can run the `recommend` command to get model recommendations for a specific task.
-There is some level of randomness in the recommendations, so you may get different results on different runs. For example:
+Current tasks include: `statement credibility classification` (runs.csv), `automated program repair` (runs2.csv), and `clinical note summarization` (runs3.csv).
+
+(Note: there is some level of randomness in the recommendations, so you may get different results on different runs.)
 
 ```sh
 # Classification task
@@ -107,7 +109,8 @@ Recommended subset for 'classify a short statement into a category of fakeness':
   8. o3-mini
   9. o4-mini
   10. qwen2.5:32b
-# Automated Program Repair
+
+# Automated Program Repair task
 › python main.py recommend --data "runs2.csv"
 Setting: runs2.csv as trial data file.
 Setting: 0.5 as usage threshold.
@@ -122,7 +125,8 @@ Recommended subset for 'fix buggy program':
   7. o1-mini
   8. o3-mini
   9. qwen2.5:32b
-# Clinical Note Summarization
+
+# Clinical Note Summarization task
 › python main.py recommend --data "runs3.csv"
 Setting: runs3.csv as trial data file.
 Setting: 0.5 as usage threshold.
@@ -139,9 +143,11 @@ Recommended subset for 'generate a concise, clinically formal summary':
   9. qwen2.5:32b
 ```
 
-## Running Experiments
+## Experiments (Paper)
 
-You can run the experiments through the `main.py` script:
+You can run all our experiments through the `main.py` script:
+
+### Research Questions
 
 ```sh
 # Research Question 1:
@@ -150,6 +156,16 @@ You can run the experiments through the `main.py` script:
 › python main.py eval --question rq2
 # Research Question 3:
 › python main.py eval --question rq3
+```
+
+### Chemistry Maps
+
+You can run the `cheme-maps.py` script to generate Chemistry Maps for different tasks.
+You can run it as a notebook, or directly from the command line. Next, we show how to run it from the command line.
+Please change the performance history file (`TRIAL_DATA_FILE`) in the `cheme-maps.py` script to one of these options: `runs.csv`, `runs2.csv`, or `runs3.csv`, and then run the `cheme-maps.py` script.
+
+```sh
+› python cheme-maps.py
 ```
 
 ### 🤝 Contributions
