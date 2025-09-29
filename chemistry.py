@@ -27,10 +27,6 @@ THRESHOLD_FOR_USAGE = 0.5
 
 # Task 1
 TRIAL_DATA_FILE = "runs.csv"
-# Task 2
-TRIAL_DATA_FILE2 = "runs2.csv"
-# Task 3
-TRIAL_DATA_FILE3 = "runs3.csv"
 
 @type_checked
 def set_trial_data_param(file: PathLike) -> None:
@@ -316,11 +312,10 @@ def load_trial_data(
     - elapsed (str): Human-readable elapsed time for generation.
     - created (str): Timestamp of result creation in human-readable form.
   
-  Rather than using sklearn (a heavyweight lib), we are implementing a 
-  token-based clustering function, which clusters tasks based on syntactic
-  similarity using embeddings. Each cluster is identified by a prototype task, 
-  and all results are grouped under that prototype. This allows downstream queries 
-  to generalize across near-duplicate prompts reliably.
+  A minor optimization step: we are implementing a token-based clustering function, 
+  which clusters tasks based on syntactic similarity using embeddings. Each cluster 
+  is identified by a prototype task, and all results are grouped under that prototype. 
+  This allows downstream queries to generalize across near-duplicate prompts reliably.
   """
   if not csv_file.exists():
     raise FileNotFoundError(f"CSV file not found: {csv_file}")
@@ -672,10 +667,10 @@ def recommend(
   X_q: set[frozenset[str]], # past LLM configurations for p
   alpha: float = 0.5,
   iters: int = 10,
-  use_randomized: bool = False,
   min_size: int = 2,
   verbose: bool = False,
-  # explicit policies and classification thresholds for fallback behavior
+  # explicit policies and classification thresholds for 
+  # fallback behavior (to handle homogenous performance cases)
   model_scores: ty.Optional[dict[str, tuple[float, float]]] = None,
   fallback_policy_good: str = "single",  # "single" or "all"
   fallback_policy_bad: str = "none",     # "none" or "single"
@@ -710,22 +705,6 @@ def recommend(
     all_good = (min(a_vals) >= hi_a) and (min(q_vals) >= hi_q)
     all_bad  = (max(a_vals) <= lo_a) and (max(q_vals) <= lo_q)
     return (all_good, all_bad)
-  
-  if use_randomized:
-    # DO NOT USE THIS YET!
-    # This randomized version of the original recommendation algorithm attempts to select 
-    # a subset of models from a candidate pool S that maximize 
-    # internal “chemistry” (pairwise compatibility) based on chem_table, 
-    # while balancing exploration (random trials) and exploitation (prior good solutions).
-    # Like the original version, it uses chemistry as an objective function to decide 
-    # which models to recommend.
-    # In other words, it uses the chem_table, which implicitly defines a graph of compatibility. 
-    # I.e., good teams/subsets of LLMs have high total internal edges.
-    # This function will always return a subset of S with len ≥ min_size (if any exist with 
-    # sufficient chemistry). It is still a greedy algorithm but now it incorporates 
-    # probabilistic growth. This avoids being stuck in deterministic local optima.
-    return recommend_randomized(
-      S, chem_table, X_q, alpha=alpha, min_size=min_size)
   
   if len(chem_table) == 0:
     U = _U_from_Xq()
