@@ -154,7 +154,7 @@ def get_models_in_config(task: str, config: list[dict]) -> list[Model]:
       model = Model(
         name=row['model'], 
         q_i=row['quality'], 
-        a_i=row['effectiveness'], 
+        a_i=row['accuracy'], 
         trial=row['trial'])
 
       model_id = (model.name, model.q_i, model.a_i, model.trial)

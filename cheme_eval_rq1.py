@@ -145,7 +145,7 @@ def get_models_in_config(task: str, config: list[dict]) -> list[Model]:
       model = Model(
         name=row['model'], 
         q_i=row['quality'], 
-        a_i=row['effectiveness'], 
+        a_i=row['accuracy'], 
         trial=row['trial'])
 
       model_id = (model.name, model.q_i, model.a_i, model.trial)
@@ -169,16 +169,16 @@ def load_actual_performance_data(
   # Get unique items/test cases
   items = sorted(df['id'].unique().tolist())
 
-  # For each model-item pair, get the effectiveness/accuracy
+  # For each model-item pair, get the accuracy
   model_performance = defaultdict(dict)
 
   for _, row in df.iterrows():
     model_name = row['model']
     item_id = row['id']
 
-    # Use effectiveness as the "correctness" probability for this item
+    # Use accuracy as the "correctness" probability for this item
     # In real evaluation, you'd have actual predictions vs ground truth
-    effectiveness = row['effectiveness']
+    effectiveness = row['accuracy']
 
     model_performance[model_name][item_id] = effectiveness
 
@@ -249,7 +249,7 @@ def evaluate_improvement_over_best(
   model_effectiveness_map = {}
   for row in all_configs_data:
     model_name = row['model']
-    effectiveness = row['effectiveness']
+    effectiveness = row['accuracy']
     model_effectiveness_map[model_name] = effectiveness
 
   # Calculate individual effectiveness

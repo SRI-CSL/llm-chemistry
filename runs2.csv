@@ -1,4 +1,4 @@
-trial,model,task,latency,temperature,id,result,quality,accuracy,variance,consensus,effectiveness,elapsed,strategy,created
+trial,model,task,latency,temperature,id,result,quality,generation_accuracy,variance,review_accuracy,accuracy,elapsed,strategy,created
 Trial_6248 1,o1-mini,fix buggy program,38.0,1.0,Item_5,"def bitcount(n):
     count = 0
     while n:

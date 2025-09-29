@@ -104,7 +104,7 @@ def find_groups_in_data(
       "model": str,
       "task": str,
       "quality": float,
-      "effectiveness": float,
+      "accuracy": float,
       "strategy": str,
     }
   )
@@ -198,7 +198,7 @@ def find_top_k(
 ) -> list[set[str]]:
   """
   Given a file with tabular data, return the top k most effective models 
-  by 'effectiveness'. Uses fast_tab_data_read to read the file and returns 
+  by 'accuracy'. Uses fast_tab_data_read to read the file and returns 
   a set of model names.
   """
   if Ks is None:
@@ -206,7 +206,7 @@ def find_top_k(
   df = fast_tab_data_read(filepath)
   
   # Check for required columns
-  required_columns = {'model', 'effectiveness'}
+  required_columns = {'model', 'accuracy'}
   if not required_columns.issubset(df.columns):
     missing = required_columns - set(df.columns)
     raise ValueError(
@@ -215,7 +215,7 @@ def find_top_k(
   
   # Sort by effectiveness (highest first) and keep only the best instance of each model
   # This ensures that for duplicate model names, we keep the one with higher effectiveness
-  df_sorted = df.sort_values('effectiveness', ascending=False)
+  df_sorted = df.sort_values('accuracy', ascending=False)
   df_deduplicated = df_sorted.drop_duplicates(subset=['model'], keep='first')
   unique_sorted_models = df_deduplicated['model']
   
@@ -239,13 +239,13 @@ def find_top_k_rows(
 ) -> list[list[dict]]:
   """
   Given a file with tabular data, return the top k most effective models 
-  by 'effectiveness'. Uses fast_tab_data_read to read the file and returns 
+  by 'accuracy'. Uses fast_tab_data_read to read the file and returns 
   the whole record (row) as a dict for each model.
   """
   df = fast_tab_data_read(filepath)
   
   # Check for required columns
-  required_columns = {'model', 'effectiveness'}
+  required_columns = {'model', 'accuracy'}
   if not required_columns.issubset(df.columns):
     missing = required_columns - set(df.columns)
     raise ValueError(
@@ -254,7 +254,7 @@ def find_top_k_rows(
     )
   
   # Sort by effectiveness (highest first), keep best instance per model
-  df_sorted = df.sort_values('effectiveness', ascending=False)
+  df_sorted = df.sort_values('accuracy', ascending=False)
   df_deduplicated = df_sorted.drop_duplicates(subset=['model'], keep='first')
   
   results: list[list[dict]] = []

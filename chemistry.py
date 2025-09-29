@@ -337,7 +337,7 @@ def load_trial_data(
       "model": str,
       "task": str,
       "quality": float,
-      "effectiveness": float,
+      "accuracy": float,
       "strategy": str,
     }
   )
@@ -357,7 +357,7 @@ def load_trial_data(
     model = Model(
       model_name,
       q_i=row.quality,
-      a_i=max(0.1, row.effectiveness),
+      a_i=max(0.1, row.accuracy),
       trial=row.trial
     )
 
