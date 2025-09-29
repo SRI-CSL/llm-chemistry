@@ -168,10 +168,26 @@ Please change the performance history file (`TRIAL_DATA_FILE`) in the `cheme-map
 › python cheme-maps.py
 ```
 
-### 🤝 Contributions
+## 🤝 Contributions
 
 We have a [set of guidelines](CONTRIBUTING.md) for contributing to `llm-chemistry`.  These are guidelines, not rules. Use your best judgment, and feel free
 to propose  changes to this document in a pull request.
+
+## Citation
+
+If you find `llm-chemistry` useful in your research, please cite our work as follows:
+
+```tex
+@article{sanchez2025llmchemistry,
+  title={LLM Chemistry Estimation for Multi-LLM Recommendation},
+  author={Sanchez, Huascar and Hitaj, Briland},
+  journal={arXiv preprint arXiv:2509.},
+  year={2025},
+  doi={}
+}
+```
+
+Please cite the `llm-chemistry` tool itself following [CITATION.cff](./CITATION.cff) file.
 
 ## ⚖️ License
 

@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: LLM Chemistry Estimation for Multi-LLM Recommendation
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Huascar
+    family-names: Sanchez
+    orcid: 'https://orcid.org/0009-0009-3739-2443'
+    affiliation: SRI International
+  - given-names: Briland
+    family-names: Hitaj
+    affiliation: SRI International
+    orcid: 'https://orcid.org/0000-0001-5925-3027'
+repository-code: 'https://github.com/SRI-CSL/llm-chemistry'
+keywords:
+  - Multi-LLM Collaboration
+  - Multi-LLM Recommendation
+  - LLM Chemistry
+license: MIT
+date-released: '2025-09-29'
