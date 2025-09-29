@@ -1,6 +1,6 @@
 # LLM Chemistry Estimation for Multi-LLM Recommendation
 
-## Prelims
+## 🛠️ Prelims
 
 ### LLM Chemistry code
 
@@ -70,7 +70,7 @@ options:
   --verbose, -v         print detailed results and intermediate steps.
 ```
 
-## Running Code
+## 🏃 Running Code
 
 ### Predefined Examples
 
@@ -143,7 +143,7 @@ Recommended subset for 'generate a concise, clinically formal summary':
   9. qwen2.5:32b
 ```
 
-## Experiments (Paper)
+## 🔬 Experiments (Paper)
 
 You can run all our experiments through the `main.py` script:
 
