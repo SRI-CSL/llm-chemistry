@@ -2,7 +2,6 @@
 # Copyright Huascar Sanchez, 2024-.
 
 import pathlib as pl
-import random
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import lru_cache
@@ -282,7 +281,7 @@ def load_trial_data(
   csv_file: pl.Path
 ) -> tuple[dict[str, str], dict[str, dict[str, Model]]]:
   """
-  Load trial data from a CSV file and organize it by clustered tasks.
+  Load trial data (aka performance histories) from a CSV file and organize it by clustered tasks.
 
   The input CSV is expected to contain one row per (trial, model, task) combination,
   with associated performance and metadata fields. Because tasks (values of task column) 
@@ -365,7 +364,9 @@ def load_trial_data(
   return index, dict(trial_data)
 
 @lru_cache(maxsize=1)
-def lazy_load_trial_data(data_file: ty.Optional[str] = None) -> tuple[dict[str, str], dict[str, dict[str, Model]]]:
+def lazy_load_trial_data(
+  data_file: ty.Optional[str] = None
+) -> tuple[dict[str, str], dict[str, dict[str, Model]]]:
   # Note: this path could change depending on where this module is placed.
   trial_data_file = TRIAL_DATA_FILE if data_file is None else data_file
   trial_data_file = pl.Path.cwd() / trial_data_file
@@ -374,7 +375,9 @@ def lazy_load_trial_data(data_file: ty.Optional[str] = None) -> tuple[dict[str, 
   return load_trial_data(trial_data_file)
 
 @type_checked
-def get_trial_data(data_file: ty.Optional[str] = None) -> dict[str, dict[str, Model]]:
+def get_trial_data(
+  data_file: ty.Optional[str] = None
+) -> dict[str, dict[str, Model]]:
   _, trial_data = lazy_load_trial_data(data_file=data_file)
   return trial_data
 
@@ -535,117 +538,6 @@ def loss(
 
   return alpha * loss_inter + (1 - alpha) * loss_intra + size_penalty
 
-# ----------------------
-@type_checked
-def recommend_randomized(
-  S: set[str], 
-  chem_table: dict[tuple[str, str], float],
-  X_q: set[frozenset[str]],
-  alpha: float = 0.5,
-  rand_cnt: int = 10,  # Number of randomized iterations
-  min_size: int = 2
-) -> set[str] | None:
-  """
-  Randomized recommendation inspired by the choosePartition algorithm.
-  Performs multiple randomized iterations to find the best chemistry-based solution.
-  """
-  if len(chem_table) == 0:
-    return None
-
-  max_total_chem = float(sum(
-    chem_table.get((a, b), 0.0) or chem_table.get((b, a), 0.0)
-    for a, b in combinations(sorted(S), 2)
-  ))
-
-  # max_inter_chem = max_total_chem
-  max_inter_chem = fast_max_inter_chem(S, chem_table)
-  
-  # print(f"DEBUG: max_total_chem = {max_total_chem}")
-  # print(f"DEBUG: max_inter_chem = {max_inter_chem}")
-  # print(f"DEBUG: Number of configurations to evaluate: {len(X_q)}")
-
-  best_solution = None
-  best_loss = float('inf')
-
-  # Try baseline solutions from X_q
-  for X_i in X_q:
-    if len(X_i) >= min_size:
-      current_sol = set(X_i)
-      current_loss = loss(current_sol, S, chem_table, max_total_chem, max_inter_chem, alpha)
-      if current_loss < best_loss:
-        best_solution = current_sol
-        best_loss = current_loss
-
-  # Randomized iterations
-  for _ in range(rand_cnt):
-    # Stage 1: Start with high-chemistry pairs
-    candidate = _build_chemistry_based_solution(S, chem_table, min_size)
-
-    if candidate and len(candidate) >= min_size:
-      candidate_loss = loss(candidate, S, chem_table, max_total_chem, max_inter_chem, alpha)
-      if candidate_loss < best_loss:
-        best_solution = candidate
-        best_loss = candidate_loss
-
-  return best_solution
-
-def _build_chemistry_based_solution(
-  S: set[str], 
-  chem_table: dict[tuple[str, str], float],
-  min_size: int
-) -> set[str] | None:
-  """
-  Build a solution by iteratively adding models with high chemistry interactions.
-  """
-  # Get all pairs with their chemistry weights
-  pairs_with_weights = []
-  for a, b in combinations(S, 2):
-    weight = chem_table.get((a, b), 0.0) or chem_table.get((b, a), 0.0)
-    if weight > 0:
-      pairs_with_weights.append(((a, b), weight))
-  
-  if not pairs_with_weights:
-    return None
-  
-  # Stage 1: Select initial pair weighted by chemistry strength
-  weights = [w for _, w in pairs_with_weights]
-  selected_pair = random.choices(pairs_with_weights, weights=weights, k=1)[0][0]
-  solution = set(selected_pair)
-  
-  # Stage 2: Iteratively add models that have good chemistry with existing solution
-  remaining = S - solution
-  
-  while remaining and len(solution) < len(S):
-    # Calculate weights for adding each remaining model
-    add_weights = []
-    candidates = []
-    
-    for candidate in remaining:
-      # Calculate average chemistry with existing solution members
-      total_chemistry = sum(
-        chem_table.get((candidate, existing), 0.0) or chem_table.get((existing, candidate), 0.0)
-        for existing in solution
-      )
-      
-      if total_chemistry > 0:
-        # Weight inversely proportional to solution size (favor smaller sets)
-        weight = total_chemistry / (len(solution) + 1)
-        add_weights.append(weight)
-        candidates.append(candidate)
-    
-    if not candidates:
-      break
-      
-    # Randomly select next model to add (weighted by chemistry)
-    if random.random() < 0.3:  # 30% chance to stop growing (favor smaller sets)
-      break
-      
-    selected = random.choices(candidates, weights=add_weights, k=1)[0]
-    solution.add(selected)
-    remaining.remove(selected)
-  
-  return solution if len(solution) >= min_size else None
-
 def _has_meaningful_chemistry(
   subset: frozenset[str], 
   chem_table: dict[tuple[str, str], float]
@@ -658,7 +550,6 @@ def _has_meaningful_chemistry(
       if chem_table.get((a, b), 0.0) > 0 or chem_table.get((b, a), 0.0) > 0:
         return True
   return False
-# ----------------------
 
 @type_checked
 def recommend(
