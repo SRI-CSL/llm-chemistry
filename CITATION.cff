@@ -16,10 +16,15 @@ authors:
     family-names: Hitaj
     affiliation: SRI International
     orcid: 'https://orcid.org/0000-0001-5925-3027'
+identifiers:
+  - type: doi
+    value: 10.48550/arXiv.2510.03930
+  - type: url
+    value: 'https://arxiv.org/pdf/2510.03930'
 repository-code: 'https://github.com/SRI-CSL/llm-chemistry'
 keywords:
   - Multi-LLM Collaboration
   - Multi-LLM Recommendation
   - LLM Chemistry
-license: MIT
+license: Apache-2.0
 date-released: '2025-09-29'

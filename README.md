@@ -181,9 +181,10 @@ If you find `llm-chemistry` useful in your research, please cite our work as fol
 @article{sanchez2025llmchemistry,
   title={LLM Chemistry Estimation for Multi-LLM Recommendation},
   author={Sanchez, Huascar and Hitaj, Briland},
-  journal={arXiv preprint arXiv:2510.03930.},
+  journal={arXiv preprint arXiv:2510.03930},
   year={2025},
-  url={https://arxiv.org/abs/2510.03930},
+  doi={10.48550/arXiv.2510.03930},
+  url={https://arxiv.org/abs/2510.03930}
 }
 ```
 
