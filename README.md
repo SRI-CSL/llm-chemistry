@@ -192,4 +192,4 @@ Please cite the `llm-chemistry` tool itself following [CITATION.cff](./CITATION.
 
 ## ⚖️ License
 
-This project is under the TBD License. See the [LICENSE](https://github.com/SRI-CSL/llm-chemistry/blob/main/LICENSE) file for the full license text.
+This project is under the Apache License 2.0. See the [LICENSE](https://github.com/SRI-CSL/llm-chemistry/blob/main/LICENSE) file for the full license text.
