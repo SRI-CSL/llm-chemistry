@@ -4,10 +4,12 @@
 import math
 import pathlib as pl
 from collections import Counter, defaultdict
+from warnings import deprecated
 
 import beartype.typing as ty
 import numpy as np
 import pandas as pd
+import torch
 from beartype import beartype as type_checked
 
 PathLike = str | pl.Path
@@ -275,6 +277,128 @@ def tokenize(text: str) -> list[str]:
   return text.lower().split()
 
 @type_checked
+def compute_sparse_tfidf_matrix(
+  tasks: list[str]
+) -> tuple[torch.Tensor, list[str]]:
+  """
+  Creates a Normalized Sparse TF-IDF Tensor (N, Vocab)
+  """
+  tokenized_docs = [tokenize(t) for t in tasks]
+
+  # 1. Build Vocab & Sparse Indices (Python side is faster for string hashing)
+  vocab = {}
+  indices = [] # [[row, col], ...]
+  values = []  # [count, ...]
+
+  for doc_idx, doc in enumerate(tokenized_docs):
+    counts = Counter(doc)
+    for token, count in counts.items():
+      if token not in vocab:
+        vocab[token] = len(vocab)
+
+      indices.append([doc_idx, vocab[token]])
+      values.append(count)
+
+  if not indices:
+    return torch.empty(0), []
+
+  # 2. Create Base Sparse Tensor (TF)
+  # Shape: (Num_Docs, Vocab_Size)
+  i = torch.LongTensor(indices).t()  # Size (2, NNZ)
+  v = torch.FloatTensor(values)      # Size (NNZ)
+
+  num_docs = len(tasks)
+  vocab_size = len(vocab)
+
+  # 3. Compute IDF (Vectorized)
+  # Since we used Counter above, 'i[1]' contains the column (word) index 
+  # exactly once for every document that contains that word.
+  # Therefore, bincount on column indices gives us Document Frequency (DF).
+  df = torch.bincount(i[1], minlength=vocab_size).float()
+
+  # IDF = log(N / (1 + DF))
+  idf = torch.log(num_docs / (1 + df))
+
+  # 4. Apply IDF to TF values
+  # We multiply the TF 'values' by the IDF corresponding to their column index
+  tf_idf_values = v * idf[i[1]]
+
+  # 5. L2 Normalization (Vectorized on Sparse Data)
+  # Calculate sum of squares per row (document)
+  # scatter_add adds values into the specific indices of the target
+  row_sq_sums = torch.zeros(num_docs)
+  row_sq_sums.scatter_add_(0, i[0], tf_idf_values ** 2)
+  row_norms = torch.sqrt(row_sq_sums)
+
+  # Handle zero division safely
+  row_norms[row_norms == 0] = 1.0
+
+  # Normalize the values
+  # Divide each value by the norm of its specific row
+  norm_values = tf_idf_values / row_norms[i[0]]
+
+  # 6. Construct Final Sparse Tensor
+  # We use coalesce() to ensure indices are sorted and optimized for math
+  sparse_tensor = torch.sparse_coo_tensor(i, norm_values, (num_docs, vocab_size))
+  return sparse_tensor.coalesce(), tasks
+
+@type_checked
+def cluster_tasks_sparse(
+  tasks: list[str], 
+  threshold: float = 0.85
+) -> dict[str, str]:
+  if not tasks:
+    return {}
+
+  # 1. Get the master sparse matrix (N, V)
+  # This uses minimal memory even for huge vocabularies
+  matrix, _ = compute_sparse_tfidf_matrix(tasks)
+
+  task_to_prototype = {}
+
+  # We keep prototypes as a list of indices to avoid complex sparse slicing
+  prototype_indices = []
+
+  # 2. Greedy Clustering Loop
+  # Optimization: We cannot easily do Sparse @ Sparse in a loop efficiently.
+  # However, Sparse_Matrix @ Dense_Vector is extremely fast.
+  # We densify ONLY the single current vector being compared (size = V),
+  # while keeping the Prototypes Matrix sparse.
+
+  for i in range(len(tasks)):
+    matched = False
+
+    if prototype_indices:
+      # A. Create a sparse sub-matrix of just the prototypes
+      # index_select works on sparse tensors in newer PyTorch,
+      # but masking is safer for "drop-in" compatibility across versions.
+      # Ideally, we'd use slicing (CSR), but sticking to COO logic:
+      proto_matrix = torch.index_select(matrix, 0, torch.tensor(prototype_indices))
+
+      # B. Get current vector (Dense)
+      # Densifying one vector (Size V) is cheap (KB/MBs), unlike densifying the whole matrix.
+      current_vec_dense = matrix[i].to_dense().unsqueeze(1)  # Shape (V, 1)
+
+      # C. Compute Cosine Similarity
+      # (Num_Protos, V) sparse @ (V, 1) dense -> (Num_Protos, 1) dense
+      sim_scores = torch.sparse.mm(proto_matrix, current_vec_dense).flatten()
+
+      # D. Check threshold
+      best_val, best_idx = torch.max(sim_scores, dim=0)
+
+      if best_val.item() >= threshold:
+        matched = True
+        proto_real_idx = prototype_indices[best_idx]
+        task_to_prototype[tasks[i]] = tasks[proto_real_idx]
+
+    if not matched:
+      prototype_indices.append(i)
+      task_to_prototype[tasks[i]] = tasks[i]
+
+  return task_to_prototype
+
+# @type_checked
+@deprecated("cluster_tasks() was replaced by cluster_tasks_sparse().")
 def compute_idf(docs: list[list[str]]) -> dict[str, float]:
   df = defaultdict(int)
   total_docs = len(docs)
@@ -284,7 +408,8 @@ def compute_idf(docs: list[list[str]]) -> dict[str, float]:
       df[token] += 1
   return {token: math.log(total_docs / (1 + df[token])) for token in df}
 
-@type_checked
+# @type_checked
+@deprecated("cluster_tasks() was replaced by cluster_tasks_sparse().")
 def compute_tf_idf(
   doc_tokens: list[str], 
   idf: dict[str, float], 
@@ -297,12 +422,14 @@ def compute_tf_idf(
       vec[vocab[token]] = count * idf.get(token, 0.0)
   return vec
 
-@type_checked
+# @type_checked
+@deprecated("cluster_tasks() was replaced by cluster_tasks_sparse().")
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
   denom = np.linalg.norm(a) * np.linalg.norm(b)
   return float(np.dot(a, b) / denom) if denom != 0 else 0.0
 
-@type_checked
+# @type_checked
+@deprecated("Use cluster_tasks_sparse() instead. This will be removed soon.")
 def cluster_tasks(tasks: list[str], threshold: float = 0.85) -> dict[str, str]:
   tokenized = [tokenize(t) for t in tasks]
   idf = compute_idf(tokenized)
