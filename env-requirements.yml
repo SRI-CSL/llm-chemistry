@@ -13,5 +13,6 @@ dependencies:
   - pip=25.1.1
   - pip:
       - beartype==0.21.0
+      - torch>=2.9.1
       - psutil==7.0.0
       - ipykernel==6.30.0

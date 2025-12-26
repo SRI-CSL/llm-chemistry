@@ -10,7 +10,8 @@ from itertools import combinations
 import beartype.typing as ty
 from beartype import beartype as type_checked
 
-from utils import cluster_tasks, fast_tab_data_read
+from utils import cluster_tasks_sparse as cluster_tasks
+from utils import fast_tab_data_read
 
 SetLike = set[str] | frozenset[str]
 PathLike = str | pl.Path
